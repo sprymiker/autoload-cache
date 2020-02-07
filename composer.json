@@ -1,0 +1,29 @@
+{
+  "name": "sprymiker/autoload-cache",
+  "type": "composer-plugin",
+  "description": "",
+  "keywords": [
+    "composer",
+    "autoload",
+    "development",
+    "cache"
+  ],
+  "license": "proprietary",
+  "require": {
+    "php": ">=7.2",
+    "ext-redis": "*",
+    "symfony/filesystem": "^4.0",
+    "composer-plugin-api": "^1.1"
+  },
+  "require-dev": {
+    "composer/composer": "^1.9"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sprymiker\\AutoloadCache\\": "src/Sprymiker/AutoloadCache"
+    }
+  },
+  "extra": {
+    "class": "Sprymiker\\AutoloadCache\\ComposerPlugin"
+  }
+}
