@@ -4,6 +4,8 @@ namespace Composer\Autoload;
 
 use Redis;
 
+include __DIR__ . DIRECTORY_SEPARATOR . 'ClassLoaderOriginal.php';
+
 class ClassLoader extends ClassLoaderOriginal
 {
     protected const SEPARATOR = ':';
@@ -32,7 +34,12 @@ class ClassLoader extends ClassLoaderOriginal
     /**
      * @var string
      */
-    protected $keyPrefix = 'autoload' . self::SEPARATOR;
+    protected $keyPrefix = 'autoload';
+
+    /**
+     * @var string[]
+     */
+    protected $cachedClassMap = [];
 
     /**
      * @var string[]
@@ -41,21 +48,30 @@ class ClassLoader extends ClassLoaderOriginal
 
     public function __construct()
     {
-        $this->enabled = getenv('COMPOSER_AUTOLOAD_CACHE_ENABLED');
+        $this->enabled = (bool)getenv('COMPOSER_AUTOLOAD_CACHE_ENABLED');
         $this->redisHost = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_DATABASE') ?: $this->redisHost;
-        $this->redisPort = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_DATABASE') ?: $this->redisPort;
+        $this->redisPort = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_PORT') ?: $this->redisPort;
         $this->redisDatabase = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_DATABASE') ?: $this->redisDatabase;
 
         if ($this->enabled) {
             $this->loadCache();
-
-            // `__destruct` does not work for this class
-            register_shutdown_function([$this, 'flushCache']);
         }
     }
 
+    public function __destruct()
+    {
+        $this->flushCache();
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function findFileWithExtension($class, $ext)
     {
+        if ($this->enabled && isset($this->cachedClassMap[$class])) {
+            return $this->cachedClassMap[$class];
+        }
+
         $file = parent::findFileWithExtension($class, $ext);
 
         if ($this->enabled) {
@@ -109,12 +125,7 @@ class ClassLoader extends ClassLoaderOriginal
             $keys = $redis->keys('*');
             if (!empty($keys)) {
                 $values = $redis->mget($keys);
-                $map = array_map(function ($fileAndClass) {
-                    return explode(':', $fileAndClass)[1] ?: false;
-                },
-                    array_flip(array_combine($keys, $values))
-                );
-                $this->addClassMap($map);
+                $this->cachedClassMap = $this->mapCacheDataToClassMap($keys, $values);
             }
             $redis->close();
         }
@@ -126,12 +137,13 @@ class ClassLoader extends ClassLoaderOriginal
     protected function connectToRedis(): ?Redis
     {
         $redis = new Redis();
-        if ($redis->pconnect($this->redisHost, $this->redisPort)) {
-            $redis->select($this->redisDatabase);
 
-            return $redis;
+        if (!$redis->pconnect($this->redisHost, $this->redisPort)) {
+            return null;
         }
 
-        return null;
+        $redis->select($this->redisDatabase);
+
+        return $redis;
     }
 }

@@ -72,14 +72,16 @@ class ComposerPlugin implements PluginInterface, EventDispatcher\EventSubscriber
 
         $originalLoaderContent = str_replace([
             'class ClassLoader',
-            'private function findFileWithExtension',
+            'private function',
+            'private $',
         ], [
             'class ClassLoaderOriginal',
-            'protected function findFileWithExtension',
+            'protected function',
+            'protected $',
         ], file_get_contents($loaderFile));
 
         file_put_contents($originalLoaderFile, $originalLoaderContent);
-        $fileSystem->copy($template, $loaderFile);
+        $fileSystem->copy($template, $loaderFile, true);
     }
 
     /**

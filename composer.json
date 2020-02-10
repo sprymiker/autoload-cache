@@ -23,6 +23,9 @@
       "Sprymiker\\AutoloadCache\\": "src/Sprymiker/AutoloadCache"
     }
   },
+  "bin": [
+    "bin/autoload-watch.sh"
+  ],
   "extra": {
     "class": "Sprymiker\\AutoloadCache\\ComposerPlugin"
   }
