@@ -14,7 +14,7 @@ class ClassLoader extends ClassLoaderOriginal
     /**
      * @var bool
      */
-    protected $enabled = false;
+    protected $redisCacheEnabled = false;
 
     /**
      * @var string
@@ -34,26 +34,26 @@ class ClassLoader extends ClassLoaderOriginal
     /**
      * @var string
      */
-    protected $keyPrefix = 'autoload';
+    protected $redisKeyPrefix = 'autoload';
 
     /**
      * @var string[]
      */
-    protected $cachedClassMap = [];
+    protected $redisCachedClassMap = [];
 
     /**
      * @var string[]
      */
-    protected $cacheBuffer = [];
+    protected $redisCacheBuffer = [];
 
     public function __construct()
     {
-        $this->enabled = (bool)getenv('COMPOSER_AUTOLOAD_CACHE_ENABLED');
+        $this->redisCacheEnabled = (bool)getenv('COMPOSER_AUTOLOAD_CACHE_ENABLED');
         $this->redisHost = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_HOST') ?: $this->redisHost;
         $this->redisPort = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_PORT') ?: $this->redisPort;
         $this->redisDatabase = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_DATABASE') ?: $this->redisDatabase;
 
-        if ($this->enabled) {
+        if ($this->redisCacheEnabled) {
             $this->loadCache();
         }
     }
@@ -68,13 +68,13 @@ class ClassLoader extends ClassLoaderOriginal
      */
     protected function findFileWithExtension($class, $ext)
     {
-        if ($this->enabled && isset($this->cachedClassMap[$class])) {
-            return $this->cachedClassMap[$class];
+        if ($this->redisCacheEnabled && isset($this->redisCachedClassMap[$class])) {
+            return $this->redisCachedClassMap[$class];
         }
 
         $file = parent::findFileWithExtension($class, $ext);
 
-        if ($this->enabled) {
+        if ($this->redisCacheEnabled) {
             $this->putInCache($class, $file);
         }
 
@@ -88,13 +88,13 @@ class ClassLoader extends ClassLoaderOriginal
     protected function putInCache(string $class, $file): void
     {
         $cacheKey = implode(static::SEPARATOR, [
-            $this->keyPrefix,
+            $this->redisKeyPrefix,
             $file ? realpath($file) : '',
             str_replace('\\', '/', $class)
         ]);
-        $this->cacheBuffer[$cacheKey] = $class;
+        $this->redisCacheBuffer[$cacheKey] = $class;
 
-        if (count($this->cacheBuffer) >= static::BULK_SIZE) {
+        if (count($this->redisCacheBuffer) >= static::BULK_SIZE) {
             $this->flushCache();
         }
     }
@@ -104,16 +104,16 @@ class ClassLoader extends ClassLoaderOriginal
      */
     protected function flushCache(): void
     {
-        if (count($this->cacheBuffer) === 0) {
+        if (count($this->redisCacheBuffer) === 0) {
             return;
         }
 
         if ($redis = $this->connectToRedis()) {
-            $redis->mset($this->cacheBuffer);
+            $redis->mset($this->redisCacheBuffer);
             $redis->close();
         }
 
-        $this->cacheBuffer = [];
+        $this->redisCacheBuffer = [];
     }
 
     /**
@@ -125,10 +125,25 @@ class ClassLoader extends ClassLoaderOriginal
             $keys = $redis->keys('*');
             if (!empty($keys)) {
                 $values = $redis->mget($keys);
-                $this->cachedClassMap = $this->mapCacheDataToClassMap($keys, $values);
+                $this->redisCachedClassMap = $this->mapCacheDataToClassMap($keys, $values);
             }
             $redis->close();
         }
+    }
+
+    /**
+     * @param array $keys
+     * @param array $values
+     *
+     * @return array
+     */
+    protected function mapCacheDataToClassMap(array $keys, array $values): array
+    {
+        return array_map(function ($fileAndClass) {
+            return explode(static::SEPARATOR, $fileAndClass)[1] ?: false;
+        },
+            array_flip(array_combine($keys, $values))
+        );
     }
 
     /**

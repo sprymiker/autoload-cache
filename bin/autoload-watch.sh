@@ -34,10 +34,12 @@ while getopts "e:x:w:r:h:p:n:k:s:v" opt; do
     # Watch root folder. That support inotify
     w)
         HOST_DIR=${OPTARG%/}
+        HOST_DIR=${HOST_DIR# }
         ;;
     # Read root folder. That provides fast read access.
     r)
         APP_DIR=${OPTARG%/}
+        APP_DIR=${APP_DIR# }
         ;;
     # Redis host
     h)
