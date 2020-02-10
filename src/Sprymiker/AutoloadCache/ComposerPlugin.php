@@ -63,7 +63,7 @@ class ComposerPlugin implements PluginInterface, EventDispatcher\EventSubscriber
         $originalLoaderFile = $targetDir . DIRECTORY_SEPARATOR . 'ClassLoader' . static::ORIGINAL_SUFFIX . '.php';
 
         $classMapAuthoritative = $event->getFlags()[static::COMPOSER_POST_AUTOLOAD_DUMP_OPTIMIZE] ?? false;
-        if ($classMapAuthoritative || $event->isDevMode() === false) {
+        if ($classMapAuthoritative || $event->isDevMode() === false || !file_exists($template)) {
             file_exists($originalLoaderFile) && unlink($originalLoaderFile);
             return;
         }
