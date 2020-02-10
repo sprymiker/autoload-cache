@@ -8,7 +8,6 @@ use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
-use Symfony\Component\Filesystem\Filesystem;
 
 class ComposerPlugin implements PluginInterface, EventDispatcher\EventSubscriberInterface
 {
@@ -60,7 +59,6 @@ class ComposerPlugin implements PluginInterface, EventDispatcher\EventSubscriber
             return;
         }
 
-        $fileSystem = new Filesystem();
         $composer = $event->getComposer();
         $config = $composer->getConfig();
 
@@ -81,7 +79,8 @@ class ComposerPlugin implements PluginInterface, EventDispatcher\EventSubscriber
         ], file_get_contents($loaderFile));
 
         file_put_contents($originalLoaderFile, $originalLoaderContent);
-        $fileSystem->copy($template, $loaderFile, true);
+        unlink($loaderFile);
+        copy($template, $loaderFile);
     }
 
     /**

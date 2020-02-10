@@ -49,7 +49,7 @@ class ClassLoader extends ClassLoaderOriginal
     public function __construct()
     {
         $this->enabled = (bool)getenv('COMPOSER_AUTOLOAD_CACHE_ENABLED');
-        $this->redisHost = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_DATABASE') ?: $this->redisHost;
+        $this->redisHost = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_HOST') ?: $this->redisHost;
         $this->redisPort = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_PORT') ?: $this->redisPort;
         $this->redisDatabase = getenv('COMPOSER_AUTOLOAD_CACHE_REDIS_DATABASE') ?: $this->redisDatabase;
 

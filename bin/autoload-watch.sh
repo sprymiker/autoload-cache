@@ -171,7 +171,7 @@ echo "Starting watching: ${WATCH}"
         echo "${OUTPUT}"
 
         if [ "${OUTPUT}" == 'Watches established.' ]; then
-            touch /tmp/.autoload_healthy
+            touch /tmp/.autoload_healthy || true
             flushMap
             echo "Time elapsed: $(date -ud "@$(($(date +%s) - "${START_TIME}"))" +%T)"
             echo 'Autoload map has been flushed.'
