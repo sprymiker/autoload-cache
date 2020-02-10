@@ -1,10 +1,10 @@
 #!/bin/bash
 
 VERBOSE=0
-WATCH_INCLUDE="/src /tests /vendor"
+DEFAULT_WATCH_INCLUDE="/src /tests /vendor"
 WATCH_EXCLUDE="/vendor/bin/ /vendor/composer/ /vendor/autoload.php .git node_modules"
-HOST_DIR="/data"
-APP_DIR="/data"
+HOST_DIR="$PWD"
+APP_DIR="$PWD"
 REDIS_HOST='localhost'
 REDIS_PORT='6379'
 REDIS_DATABASE=0
@@ -71,6 +71,7 @@ done
 shift $((OPTIND - 1))
 
 WATCH=""
+WATCH_INCLUDE=${WATCH_INCLUDE:-"${DEFAULT_WATCH_INCLUDE}"}
 for path in ${WATCH_INCLUDE}; do
     [ "${path:0:1}" == '/' ] && path="${HOST_DIR}${path}"
     WATCH="${WATCH} ${path}"
