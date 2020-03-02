@@ -11,7 +11,6 @@
   "license": "proprietary",
   "require": {
     "php": ">=7.2",
-    "node": ">=8.16",
     "ext-json": "*",
     "composer-plugin-api": "^1.1"
   },
