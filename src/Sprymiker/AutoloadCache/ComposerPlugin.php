@@ -58,13 +58,14 @@ class ComposerPlugin implements PluginInterface, EventDispatcher\EventSubscriber
         $config = $composer->getConfig();
 
         $targetDir = $config->get(static::COMPOSER_CONFIG_VENDOR_DIR) . DIRECTORY_SEPARATOR . static::COMPOSER_DIR;
-        $template = __DIR__ . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'Redis' . DIRECTORY_SEPARATOR . 'ClassLoader.php';
+        $template = __DIR__ . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'ClassLoader.php';
         $loaderFile = $targetDir . DIRECTORY_SEPARATOR . 'ClassLoader.php';
         $originalLoaderFile = $targetDir . DIRECTORY_SEPARATOR . 'ClassLoader' . static::ORIGINAL_SUFFIX . '.php';
 
         $classMapAuthoritative = $event->getFlags()[static::COMPOSER_POST_AUTOLOAD_DUMP_OPTIMIZE] ?? false;
         if ($classMapAuthoritative || $event->isDevMode() === false || !file_exists($template)) {
             file_exists($originalLoaderFile) && unlink($originalLoaderFile);
+
             return;
         }
 

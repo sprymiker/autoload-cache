@@ -11,7 +11,8 @@
   "license": "proprietary",
   "require": {
     "php": ">=7.2",
-    "ext-redis": "*",
+    "node": ">=8.16",
+    "ext-json": "*",
     "composer-plugin-api": "^1.1"
   },
   "require-dev": {
@@ -22,9 +23,14 @@
       "Sprymiker\\AutoloadCache\\": "src/Sprymiker/AutoloadCache"
     }
   },
-  "bin": [
-    "bin/autoload-watch.sh"
-  ],
+  "scripts": {
+    "post-install-cmd": [
+      "npm install"
+    ],
+    "post-update-cmd": [
+      "npm install"
+    ]
+  },
   "extra": {
     "class": "Sprymiker\\AutoloadCache\\ComposerPlugin"
   }

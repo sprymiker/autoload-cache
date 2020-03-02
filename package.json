@@ -1,0 +1,13 @@
+{
+  "name": "composer-autoload-cache",
+  "description": "Composer Autoload Cache",
+  "engines": {
+    "node": ">=8.16",
+    "npm": ">=6.4.1"
+  },
+  "dependencies": {
+    "chokidar": "^3.3.1",
+    "fsevents": "^2.1.2",
+    "yargs": "^15.1.0"
+  }
+}
