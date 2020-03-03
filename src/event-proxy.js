@@ -1,6 +1,6 @@
 const net = require('net');
 
-class ChangeProxy {
+class EventProxy {
 
     constructor(port, host, logger) {
         this._host = host;
@@ -18,10 +18,6 @@ class ChangeProxy {
     }
 
     _connect(callback) {
-
-        if (!this._host || !this._port) {
-            return;
-        }
 
         if (this._client) {
             callback(this._client);
@@ -47,4 +43,4 @@ class ChangeProxy {
     }
 }
 
-module.exports = ChangeProxy;
+module.exports = EventProxy;

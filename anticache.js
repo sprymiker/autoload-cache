@@ -3,6 +3,10 @@ const fs = require('fs');
 const net = require('net');
 const readline = require('readline');
 
+process.on('uncaughtException', function (err) {
+    console.error('[E] ', err);
+});
+
 // - COMMAND -----------------
 
 const argv = yargs
@@ -42,7 +46,7 @@ const server = net.createServer(function (socket) {
     }).on('line', function (line) {
         const filePath = './' + line.trim();
         try {
-            // Opening file with write access drops NFS cache
+            // Assumes opening file with write access drops NFS cache
             fs.open(filePath, 'r+', (error, fileDescriptor) => {
                 verbose && console.info(`[` + (error ? '-' : '+') + `] ${filePath}`);
                 fileDescriptor && fs.close(fileDescriptor, () => {
@@ -55,4 +59,6 @@ const server = net.createServer(function (socket) {
     });
 });
 
-server.listen(argv.port, argv.ip);
+server.listen(argv.port, argv.ip, () => {
+    console.log(`Listening to ${argv.ip}:${argv.port}`);
+});

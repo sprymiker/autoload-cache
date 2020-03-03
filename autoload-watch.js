@@ -2,8 +2,12 @@ const yargs = require('yargs');
 
 const {Cache, Dispatcher} = require('./src/cache');
 const Watcher = require('./src/watcher');
-const ChangeProxy = require('./src/change-proxy.js');
+const EventProxy = require('./src/event-proxy.js');
 const Server = require('./src/server');
+
+process.on('uncaughtException', function (err) {
+    console.error('[E] ', err);
+});
 
 try {
     (process.platform === 'darwin') && require('fsevents');
@@ -68,16 +72,19 @@ const logger = {...console, info: argv.verbose ? console.info : () => ({})};
 const cache = new Cache(logger);
 const dispatcher = new Dispatcher(cache, logger);
 const watcher = new Watcher(watchDir, includes, logger);
-const changeProxy = new ChangeProxy(argv.proxyPort, argv.proxyHost, logger);
 const server = new Server(cache, watcher, logger);
 
 watcher
-    .addExcludes(['vendor/bin/*', 'vendor/composer/*.php', 'vendor/autoload.php', '**/.git', '**/.git/**', '**/node_modules', '**/node_modules/**'])
+    .addExcludes(['vendor/bin/**', 'vendor/composer', 'vendor/composer/**', 'vendor/autoload.php', '**/.git', '**/.git/**', '**/node_modules', '**/node_modules/**'])
     .addExcludes(argv.exclude);
 
 // - START -----------------
 
 server.listen(argv.port, argv.ip);
 watcher.watch()
-    .subscribe(dispatcher)
-    .subscribe(changeProxy);
+    .subscribe(dispatcher);
+
+if (argv.proxyPort && argv.proxyHost) {
+    const eventProxy = new EventProxy(argv.proxyPort, argv.proxyHost, logger);
+    watcher.subscribe(eventProxy);
+}
