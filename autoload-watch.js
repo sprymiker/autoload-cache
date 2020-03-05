@@ -1,9 +1,9 @@
 const yargs = require('yargs');
 
-const {Cache, Dispatcher} = require('./src/cache');
-const Watcher = require('./src/watcher');
-const EventProxy = require('./src/event-proxy.js');
-const Server = require('./src/server');
+const {Cache, Dispatcher} = require('./lib/cache.js');
+const Watcher = require('./lib/watcher.js');
+const EventProxy = require('./lib/event-proxy.js');
+const Server = require('./lib/server.js');
 
 process.on('uncaughtException', function (err) {
     console.error('[E] ', err);
