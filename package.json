@@ -1,7 +1,7 @@
 {
   "name": "autoload-cache",
   "license": "private",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Autoload Cache for Composer",
   "engines": {
     "node": ">=8.16.0"
@@ -17,5 +17,8 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/sprymiker/autoload-cache.git"
+  },
+  "devDependencies": {
+    "pm2": "^4.2.3"
   }
 }
